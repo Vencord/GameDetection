@@ -1,0 +1,70 @@
+name: Publish
+
+on:
+    push:
+        tags:
+            - "*"
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                include:
+                    # Oldest supported Ubuntu, as the binary only runs on the glibc it was built against or newer
+                    - { runner: ubuntu-22.04, target: linux-x64 }
+                    - { runner: ubuntu-22.04-arm, target: linux-arm64 }
+                    - { runner: windows-2025, target: win32-x64 }
+                    - { runner: windows-11-arm, target: win32-arm64 }
+
+        runs-on: ${{ matrix.runner }}
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            - run: pnpm build
+
+            - name: Check that the addon loads
+              run: node -e "const a = require('./build/Release/rpc_native.node'); a.setDetectableDatabase([]); a.getRunningGames().then(console.log)"
+
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: ${{ matrix.target }}
+                  path: build/Release/rpc_native.node
+                  if-no-files-found: error
+
+    publish:
+        needs: build
+        runs-on: ubuntu-24.04
+
+        permissions:
+            contents: read
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+
+            # Creates prebuilds/<target>/rpc_native.node for every target
+            - uses: actions/download-artifact@v4
+              with:
+                  path: prebuilds
+
+            # The checkout is a detached HEAD, which fails pnpm's branch check
+            - run: pnpm stage publish --provenance --no-git-checks

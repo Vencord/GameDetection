@@ -1,0 +1,25 @@
+{
+    "name": "@vencord/game-detection",
+    "version": "0.1.0-alpha",
+    "license": "GPL-3.0-or-later",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Vencord/@vencord/game-detection.git"
+    },
+    "main": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "prebuilds"
+    ],
+    "scripts": {
+        "build": "node-gyp configure build",
+        "clean": "node-gyp clean"
+    },
+    "devDependencies": {
+        "node-addon-api": "^8.9.2",
+        "node-gyp": "^13.1.0"
+    },
+    "packageManager": "pnpm@12.16.1"
+}
