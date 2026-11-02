@@ -12,7 +12,7 @@ struct Process {
     // Normalized with normalizePath
     std::string path;
     std::string args;
-    // A Windows executable, so it is matched against the win32 entries. False for native Linux processes
+    // A Windows executable, so it is matched against the win32 entries. False for native processes
     bool windowsBinary;
     // If set, the process is identified by this id instead of its path
     std::string steamAppId = {};
@@ -60,7 +60,8 @@ private:
 
     std::vector<Game> games;
     RuleMap windowsRules;
-    RuleMap linuxRules;
+    // Entries for the OS the addon was built for
+    RuleMap nativeRules;
     StringMap<size_t> steamApps;
 };
 

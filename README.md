@@ -1,6 +1,6 @@
 # @vencord/game-detection
 
-Native Node-API addon that matches running processes against Discord's detectable games database. Supports Linux (including games running through Wine and Proton) and Windows 10+, on amd64 and arm64.
+Native Node-API addon that matches running processes against Discord's detectable games database. Supports Linux (including games running through Wine and Proton), Windows 10+ and macOS, on amd64 and arm64.
 
 ## Usage
 
