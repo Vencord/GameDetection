@@ -13,7 +13,10 @@
       },
       "conditions": [
         ["OS=='linux'", { "sources": ["src/process_linux.cc"] }],
-        ["OS=='mac'", { "sources": ["src/process_mac.cc"] }],
+        ["OS=='mac'", {
+          "sources": ["src/process_mac.cc"],
+          "libraries": ["-lproc"]
+        }],
         ["OS=='win'", {
           "sources": ["src/process_win.cc"],
           "defines": ["NOMINMAX", "WIN32_LEAN_AND_MEAN"],

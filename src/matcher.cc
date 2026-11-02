@@ -122,23 +122,30 @@ const Game* Database::match(const Process& process) const {
     }
 
     const RuleMap& rules = process.windowsBinary ? windowsRules : nativeRules;
-    auto it = rules.find(baseName(process.path));
-    if (it == rules.end()) return nullptr;
+    auto matchPath = [&](std::string_view path) -> const Game* {
+        auto it = rules.find(baseName(path));
+        if (it == rules.end()) return nullptr;
 
-    // Several games can share an executable name, like hl2.exe. Prefer the most specific rule
-    const Rule* best = nullptr;
-    size_t bestScore = 0;
-    for (const Rule& rule : it->second) {
-        if (!rule.exactName && !hasPathSuffix(process.path, rule.path)) continue;
-        if (!rule.args.empty() && !hasArgument(process.args, rule.args)) continue;
+        // Several games can share an executable name. Prefer the most specific rule.
+        const Rule* best = nullptr;
+        size_t bestScore = 0;
+        for (const Rule& rule : it->second) {
+            if (!rule.exactName && !hasPathSuffix(path, rule.path)) continue;
+            if (!rule.args.empty() && !hasArgument(process.args, rule.args)) continue;
 
-        size_t score = rule.path.size() + (rule.args.empty() ? 0 : 0x10000);
-        if (score > bestScore) {
-            best = &rule;
-            bestScore = score;
+            size_t score = rule.path.size() + (rule.args.empty() ? 0 : 0x10000);
+            if (score > bestScore) {
+                best = &rule;
+                bestScore = score;
+            }
         }
+        return best ? &games[best->game] : nullptr;
+    };
+
+    if (!process.bundlePath.empty()) {
+        if (const Game* game = matchPath(process.bundlePath)) return game;
     }
-    return best ? &games[best->game] : nullptr;
+    return matchPath(process.path);
 }
 
 std::vector<Detection> detect(const Database& db) {

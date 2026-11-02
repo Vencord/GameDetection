@@ -16,6 +16,8 @@ struct Process {
     bool windowsBinary;
     // If set, the process is identified by this id instead of its path
     std::string steamAppId = {};
+    // Native macOS processes can match the enclosing .app bundle as well
+    std::string bundlePath = {};
 };
 
 struct Game {

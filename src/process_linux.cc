@@ -7,7 +7,7 @@
 #include <cctype>
 #include <cstdlib>
 
-#include "matcher.h"
+#include "process_common.h"
 
 namespace {
 
@@ -38,18 +38,6 @@ std::vector<std::string> readArgv(int proc, const std::string& pid) {
     return argv;
 }
 
-bool isWineLoader(std::string_view name) {
-    constexpr std::array loaders = {
-        std::string_view("wine"),
-        std::string_view("wine64"),
-        std::string_view("wine-preloader"),
-        std::string_view("wine64-preloader"),
-    };
-    for (std::string_view loader : loaders)
-        if (name == loader) return true;
-    return false;
-}
-
 // x86 emulators used on arm64. /proc/pid/exe is the emulator, the actual program is in argv
 bool isEmulator(std::string_view name) {
     constexpr std::array emulators = {
@@ -62,15 +50,6 @@ bool isEmulator(std::string_view name) {
     for (std::string_view emulator : emulators)
         if (name == emulator) return true;
     return false;
-}
-
-bool isAbsolute(std::string_view path) {
-    return path.starts_with('/') || (path.size() >= 2 && path[1] == ':');
-}
-
-// Wine's own services, like C:\windows\system32\explorer.exe, or Proton's steam.exe stub
-bool isWineSystemPath(std::string_view path) {
-    return path.starts_with("c:/windows/") || path.find("/drive_c/windows/") != std::string_view::npos;
 }
 
 // Steam starts every game through its reaper wrapper: reaper SteamLaunch AppId=400 -- ./game
@@ -88,15 +67,6 @@ std::string_view getSteamAppId(const std::vector<std::string>& argv, size_t& com
         if (argv[i].starts_with(prefix)) appId = std::string_view(argv[i]).substr(prefix.size());
     }
     return {};
-}
-
-std::string joinArgs(const std::vector<std::string>& argv, size_t start) {
-    std::string args;
-    for (size_t i = start; i < argv.size(); i++) {
-        if (i > start) args += ' ';
-        args += argv[i];
-    }
-    return args;
 }
 
 }  // namespace
@@ -143,10 +113,9 @@ std::vector<Process> listProcesses(const Database& db) {
         // Wine replaces argv with the path of the Windows executable, so loaders are usually gone by now.
         // That does not reach /proc under an emulator, where argv is "box64 wine game.exe"
         size_t index = emulated ? 1 : 0;
-        while (index < argv.size() && isWineLoader(baseName(normalizePath(argv[index])))) {
-            wine = true;
-            index++;
-        }
+        size_t commandIndex = skipWineLoaders(argv, index);
+        if (commandIndex != index) wine = true;
+        index = commandIndex;
         if (index >= argv.size()) continue;
 
         std::string path = normalizePath(argv[index]);
