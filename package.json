@@ -1,6 +1,6 @@
 {
     "name": "@vencord/game-detection",
-    "version": "0.1.0-alpha",
+    "version": "0.1.0-alpha.1",
     "license": "GPL-3.0-or-later",
     "repository": {
         "type": "git",
