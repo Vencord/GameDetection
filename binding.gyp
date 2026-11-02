@@ -13,15 +13,7 @@
       },
       "conditions": [
         ["OS=='linux'", { "sources": ["src/process_linux.cc"] }],
-        ["OS=='mac'", { 
-          "sources": ["src/process_mac.mm"],
-          "link_settings": {
-            "OTHER_LDFLAGS": [
-              "-framework", "CoreFoundation",
-              "-framework", "AppKit"
-            ]
-          }
-        }],
+        ["OS=='mac'", { "sources": ["src/process_mac.cc"] }],
         ["OS=='win'", {
           "sources": ["src/process_win.cc"],
           "defines": ["NOMINMAX", "WIN32_LEAN_AND_MEAN"],
