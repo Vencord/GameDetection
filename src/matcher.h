@@ -14,6 +14,8 @@ struct Process {
     std::string args;
     // A Windows executable, so it is matched against the win32 entries. False for native Linux processes
     bool windowsBinary;
+    // A macOS bundle path ("binary.."), so it is matched against the darwinRules. False for Windows or Linux binaries
+    bool darwinBinary;
     // If set, the process is identified by this id instead of its path
     std::string steamAppId = {};
 };
@@ -50,7 +52,7 @@ public:
     // Adds a Steam app id to the last added game
     void addSteamApp(std::string_view appId);
 
-    bool isCandidate(std::string_view path, bool windowsBinary) const;
+    bool isCandidate(std::string_view path, bool windowsBinary, bool darwinBinary) const;
     bool isSteamApp(std::string_view appId) const;
     const Game* match(const Process& process) const;
 
@@ -61,6 +63,7 @@ private:
     std::vector<Game> games;
     RuleMap windowsRules;
     RuleMap linuxRules;
+    RuleMap darwinRules;
     StringMap<size_t> steamApps;
 };
 

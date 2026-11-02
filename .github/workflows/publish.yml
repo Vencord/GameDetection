@@ -18,6 +18,8 @@ jobs:
                     - { runner: ubuntu-22.04-arm, target: linux-arm64 }
                     - { runner: windows-2025, target: win32-x64 }
                     - { runner: windows-11-arm, target: win32-arm64 }
+                    - { runner: macos-26-intel, target: darwin-x64 }
+                    - { runner: macos-26, target: darwin-arm64 }
 
         runs-on: ${{ matrix.runner }}
 

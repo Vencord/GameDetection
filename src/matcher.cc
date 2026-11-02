@@ -68,7 +68,7 @@ void Database::addExecutable(std::string_view os, std::string_view name, std::st
     // The arguments identify the game for these, not the JVM, so macOS entries work on Linux as well
     if (os == "darwin" && name == ">java" && !args.empty()) os = "linux";
 
-    RuleMap* rules = os == "win32" ? &windowsRules : os == "linux" ? &linuxRules : nullptr;
+    RuleMap* rules = os == "win32" ? &windowsRules : os == "linux" ? &linuxRules : os == "darwin" ? &darwinRules : nullptr;
     if (!rules || name.empty()) return;
 
     bool exactName = name[0] == '>';
@@ -104,8 +104,8 @@ bool Database::isSteamApp(std::string_view appId) const {
     return steamApps.find(appId) != steamApps.end();
 }
 
-bool Database::isCandidate(std::string_view path, bool windowsBinary) const {
-    const RuleMap& rules = windowsBinary ? windowsRules : linuxRules;
+bool Database::isCandidate(std::string_view path, bool windowsBinary, bool darwinBinary) const {
+    const RuleMap& rules = windowsBinary ? windowsRules : (darwinBinary ? darwinRules : linuxRules);
     return rules.find(baseName(path)) != rules.end();
 }
 
@@ -115,7 +115,8 @@ const Game* Database::match(const Process& process) const {
         return it == steamApps.end() ? nullptr : &games[it->second];
     }
 
-    const RuleMap& rules = process.windowsBinary ? windowsRules : linuxRules;
+    const RuleMap& rules = process.windowsBinary ? windowsRules : (process.darwinBinary ? darwinRules : linuxRules);
+    
     auto it = rules.find(baseName(process.path));
     if (it == rules.end()) return nullptr;
 

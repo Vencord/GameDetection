@@ -7,8 +7,21 @@
       "defines": ["NODE_ADDON_API_CPP_EXCEPTIONS", "NODE_API_SWALLOW_UNTHROWABLE_EXCEPTIONS"],
       "cflags_cc!": ["-fno-exceptions", "-std=gnu++17"],
       "cflags_cc": ["-std=c++20", "-O3"],
+      "xcode_settings": {
+        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+        "CLANG_CXX_LANGUAGE_STANDARD": "c++20"
+      },
       "conditions": [
         ["OS=='linux'", { "sources": ["src/process_linux.cc"] }],
+        ["OS=='mac'", { 
+          "sources": ["src/process_mac.mm"],
+          "link_settings": {
+            "OTHER_LDFLAGS": [
+              "-framework", "CoreFoundation",
+              "-framework", "AppKit"
+            ]
+          }
+        }],
         ["OS=='win'", {
           "sources": ["src/process_win.cc"],
           "defines": ["NOMINMAX", "WIN32_LEAN_AND_MEAN"],
